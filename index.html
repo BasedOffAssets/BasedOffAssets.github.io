@@ -1,269 +1,745 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Asset Scanner Dashboard</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Asset Scanner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:        #080c14;
+  --surface:   #0e1420;
+  --surface2:  #131926;
+  --border:    #1c2535;
+  --border2:   #243044;
+  --text:      #e2e8f0;
+  --muted:     #64748b;
+  --muted2:    #94a3b8;
+  --blue:      #3b82f6;
+  --blue-dim:  #1d4ed820;
+  --green:     #22c55e;
+  --green-dim: #16a34a20;
+  --yellow:    #eab308;
+  --yellow-dim:#a16207' 20;
+  --pink:      #ec4899;
+  --pink-dim:  #be185d20;
+  --red:       #ef4444;
+  --red-dim:   #dc262620;
+  --cyan:      #06b6d4;
+  --sidebar-w: 220px;
+}
 
-    body {
-      background: #0d0d0f;
-      color: #e8e8e8;
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 20px;
-    }
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.5;}
 
-    h1 {
-      font-size: 1.4rem;
-      letter-spacing: 0.1em;
-      color: #aaa;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
+/* ── LAYOUT ── */
+.shell{display:flex;height:100vh;overflow:hidden;}
 
-    .subtitle {
-      font-size: 0.8rem;
-      color: #555;
-      margin-bottom: 40px;
-    }
+/* ── SIDEBAR ── */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  padding:0;overflow:hidden;
+}
+.sidebar-logo{
+  padding:20px 18px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.logo-icon{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--blue),#7c3aed);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;flex-shrink:0;
+}
+.logo-text{font-weight:700;font-size:13px;line-height:1.2;}
+.logo-sub{font-size:10px;color:var(--muted);font-weight:400;}
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      width: 100%;
-      max-width: 900px;
-      margin-bottom: 40px;
-    }
+.nav{flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:7px;
+  cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;
+  transition:background .15s,color .15s;text-decoration:none;
+}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:var(--blue-dim);color:var(--blue);border:1px solid #3b82f615;}
+.nav-icon{width:16px;height:16px;opacity:.7;}
+.nav-item.active .nav-icon{opacity:1;}
 
-    .card {
-      background: #161618;
-      border: 1px solid #222;
-      border-radius: 12px;
-      padding: 24px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+.sidebar-footer{
+  padding:12px 8px;border-top:1px solid var(--border);
+}
+.status-pill{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 10px;border-radius:7px;
+  background:var(--green-dim);border:1px solid #22c55e18;
+  font-size:11.5px;color:var(--green);font-weight:500;
+}
+.pulse-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 0 0 #22c55e66;
+  animation:ring 2s infinite;
+}
+@keyframes ring{
+  0%{box-shadow:0 0 0 0 #22c55e66;}
+  70%{box-shadow:0 0 0 6px #22c55e00;}
+  100%{box-shadow:0 0 0 0 #22c55e00;}
+}
 
-    .card .label {
-      font-size: 0.72rem;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 
-    .card .value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #fff;
-      font-variant-numeric: tabular-nums;
-    }
+/* ── TOPBAR ── */
+.topbar{
+  height:56px;flex-shrink:0;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;padding:0 20px;
+}
+.topbar-title{font-size:15px;font-weight:600;}
+.topbar-sub{font-size:11.5px;color:var(--muted);margin-left:2px;}
+.topbar-spacer{flex:1;}
+.search-box{
+  display:flex;align-items:center;gap:8px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:6px 12px;width:260px;
+}
+.search-box input{
+  background:none;border:none;outline:none;
+  color:var(--text);font-size:12.5px;font-family:inherit;width:100%;
+}
+.search-box input::placeholder{color:var(--muted);}
+.search-kbd{
+  font-size:10px;color:var(--muted);
+  background:var(--border);border-radius:4px;padding:1px 5px;
+  font-family:'JetBrains Mono',monospace;white-space:nowrap;
+}
+.topbar-btn{
+  width:34px;height:34px;border-radius:8px;border:1px solid var(--border);
+  background:var(--surface2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:15px;
+  transition:background .15s,color .15s;
+}
+.topbar-btn:hover{background:var(--border);color:var(--text);}
+.notif-badge{position:relative;}
+.notif-badge::after{
+  content:'3';position:absolute;top:-4px;right:-4px;
+  width:14px;height:14px;border-radius:50%;
+  background:var(--red);color:#fff;font-size:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;line-height:14px;text-align:center;
+}
+.avatar{
+  width:34px;height:34px;border-radius:8px;
+  background:linear-gradient(135deg,var(--blue),#7c3aed);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;cursor:pointer;
+}
+.avatar-info{display:flex;flex-direction:column;line-height:1.2;}
+.avatar-name{font-size:12.5px;font-weight:600;}
+.avatar-role{font-size:10.5px;color:var(--muted);}
 
-    .card .value.green  { color: #4ade80; }
-    .card .value.blue   { color: #60a5fa; }
-    .card .value.yellow { color: #facc15; }
-    .card .value.pink   { color: #f472b6; }
+/* ── CONTENT ── */
+.content{
+  flex:1;overflow-y:auto;padding:20px;
+  display:flex;flex-direction:column;gap:16px;
+}
 
-    .card .sub {
-      font-size: 0.75rem;
-      color: #555;
-    }
+/* ── METRICS ROW ── */
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+.metric-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:16px;
+  display:flex;flex-direction:column;gap:10px;
+  position:relative;overflow:hidden;
+}
+.metric-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--accent,var(--blue));opacity:.6;
+}
+.metric-head{display:flex;align-items:center;justify-content:space-between;}
+.metric-label{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.01em;}
+.metric-icon{
+  width:28px;height:28px;border-radius:7px;
+  background:var(--icon-bg,var(--blue-dim));
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+}
+.metric-val{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
+.metric-val.blue {color:var(--blue);}
+.metric-val.green{color:var(--green);}
+.metric-val.yellow{color:var(--yellow);}
+.metric-val.pink {color:var(--pink);}
+.metric-val.cyan {color:var(--cyan);}
+.metric-foot{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);}
+.badge-up{color:var(--green);font-weight:600;}
+.badge-flat{color:var(--muted2);font-weight:600;}
 
-    /* servers table */
-    .section-title {
-      font-size: 0.85rem;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      width: 100%;
-      max-width: 900px;
-      margin-bottom: 12px;
-    }
+/* ── MID ROW ── */
+.mid-row{display:grid;grid-template-columns:1fr 320px;gap:12px;}
 
-    table {
-      width: 100%;
-      max-width: 900px;
-      border-collapse: collapse;
-      font-size: 0.82rem;
-    }
+/* ── CHART CARD ── */
+.chart-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:18px;
+}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.card-title{font-size:13px;font-weight:600;}
+.card-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.time-pill{
+  font-size:11px;color:var(--muted2);
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:6px;padding:4px 10px;cursor:pointer;
+  display:flex;align-items:center;gap:5px;
+}
+canvas#scanChart{width:100%!important;height:160px!important;}
 
-    thead tr { border-bottom: 1px solid #222; }
-    thead th {
-      text-align: left;
-      padding: 8px 12px;
-      color: #555;
-      font-weight: 500;
-      text-transform: uppercase;
-      font-size: 0.72rem;
-      letter-spacing: 0.06em;
-    }
+/* ── ACTIVITY FEED ── */
+.activity-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:12px;
+  overflow:hidden;
+}
+.activity-list{display:flex;flex-direction:column;gap:0;overflow-y:auto;max-height:220px;}
+.activity-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:9px 0;border-bottom:1px solid var(--border);
+}
+.activity-item:last-child{border-bottom:none;}
+.a-dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;
+}
+.a-dot.green{background:var(--green);box-shadow:0 0 5px var(--green);}
+.a-dot.blue {background:var(--blue); box-shadow:0 0 5px var(--blue);}
+.a-dot.yellow{background:var(--yellow);}
+.a-dot.red  {background:var(--red);}
+.a-text{font-size:12px;color:var(--muted2);flex:1;line-height:1.4;}
+.a-text strong{color:var(--text);font-weight:500;}
+.a-time{font-size:10.5px;color:var(--muted);white-space:nowrap;margin-top:1px;}
 
-    tbody tr {
-      border-bottom: 1px solid #1a1a1c;
-      transition: background 0.15s;
-    }
-    tbody tr:hover { background: #161618; }
+/* ── BOTTOM ROW ── */
+.bottom-row{display:grid;grid-template-columns:1fr 280px;gap:12px;}
 
-    tbody td { padding: 10px 12px; color: #ccc; }
+/* ── TABLE ── */
+.table-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;overflow:hidden;
+}
+.table-head{
+  padding:14px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.table-search{
+  display:flex;align-items:center;gap:7px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:7px;padding:5px 10px;margin-left:auto;
+}
+.table-search input{
+  background:none;border:none;outline:none;
+  color:var(--text);font-size:12px;font-family:inherit;width:140px;
+}
+.table-search input::placeholder{color:var(--muted);}
+.filter-btn{
+  font-size:11.5px;color:var(--muted2);
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:7px;padding:5px 10px;cursor:pointer;
+  display:flex;align-items:center;gap:5px;
+}
+table{width:100%;border-collapse:collapse;}
+thead th{
+  padding:9px 14px;text-align:left;
+  font-size:10.5px;color:var(--muted);font-weight:500;
+  border-bottom:1px solid var(--border);white-space:nowrap;
+  letter-spacing:.02em;
+}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--surface2);}
+tbody td{padding:10px 14px;font-size:12.5px;}
+.mono{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted2);}
+.status-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:500;padding:3px 8px;border-radius:20px;
+}
+.chip-alive   {background:var(--green-dim);color:var(--green);border:1px solid #22c55e22;}
+.chip-degraded{background:#a1620722;color:var(--yellow);border:1px solid #eab30822;}
+.chip-offline {background:var(--red-dim);color:var(--red);border:1px solid #ef444422;}
+.chip-dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.row-actions{display:flex;gap:6px;}
+.row-btn{
+  width:26px;height:26px;border-radius:6px;
+  background:var(--surface2);border:1px solid var(--border);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:var(--muted);transition:background .1s,color .1s;
+}
+.row-btn:hover{background:var(--border);color:var(--text);}
+.pagination{
+  padding:10px 14px;border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:6px;
+}
+.page-info{font-size:11.5px;color:var(--muted);margin-left:auto;}
+.page-btn{
+  width:28px;height:28px;border-radius:6px;
+  background:var(--surface2);border:1px solid var(--border);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:var(--muted);transition:background .1s;
+}
+.page-btn:hover{background:var(--border);}
+.page-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;}
 
-    .dot {
-      display: inline-block;
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      margin-right: 6px;
-    }
-    .dot.alive  { background: #4ade80; box-shadow: 0 0 6px #4ade8088; }
-    .dot.stale  { background: #ef4444; }
+/* ── ALERTS ── */
+.alerts-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:10px;
+}
+.alert-badge{
+  font-size:10px;font-weight:700;
+  background:var(--red);color:#fff;
+  border-radius:20px;padding:1px 7px;
+}
+.alert-item{
+  display:flex;gap:10px;padding:10px;
+  border-radius:8px;border:1px solid var(--border);
+  background:var(--surface2);
+}
+.severity{
+  font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;
+  white-space:nowrap;align-self:flex-start;margin-top:1px;
+}
+.sev-high  {background:#ef444420;color:var(--red);border:1px solid #ef444430;}
+.sev-medium{background:#eab30820;color:var(--yellow);border:1px solid #eab30830;}
+.sev-info  {background:#3b82f620;color:var(--blue);border:1px solid #3b82f630;}
+.alert-body{flex:1;}
+.alert-title{font-size:12px;font-weight:500;margin-bottom:2px;}
+.alert-desc{font-size:11px;color:var(--muted);}
+.alert-time{font-size:10.5px;color:var(--muted);white-space:nowrap;margin-top:1px;}
+.view-all{
+  font-size:12px;color:var(--blue);cursor:pointer;
+  display:flex;align-items:center;gap:4px;padding-top:4px;
+}
 
-    .updated {
-      font-size: 0.72rem;
-      color: #444;
-      margin-top: 32px;
-    }
-
-    .pulse {
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0.4; }
-    }
-  </style>
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+</style>
 </head>
 <body>
+<div class="shell">
 
-  <h1>🔍 Asset Scanner</h1>
-  <p class="subtitle">live dashboard — refreshes every 15s</p>
-
-  <div class="grid">
-    <div class="card">
-      <span class="label">Current ID</span>
-      <span class="value blue" id="currentID">—</span>
-      <span class="sub">scanning position</span>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🔍</div>
+      <div>
+        <div class="logo-text">Asset Scanner</div>
+        <div class="logo-sub">Real-time discovery</div>
+      </div>
     </div>
-    <div class="card">
-      <span class="label">Total Scanned</span>
-      <span class="value" id="scanned">—</span>
-      <span class="sub">across all servers</span>
+
+    <nav class="nav">
+      <a class="nav-item active" href="#">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h5v5H2V2zm0 7h5v5H2V9zm7-7h5v5H9V2zm0 7h5v5H9V9z"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 100 10A5 5 0 008 1zM0 8a8 8 0 1116 0A8 8 0 010 8z"/></svg>
+        Assets
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M1 3h14v2H1V3zm0 4h14v2H1V7zm0 4h10v2H1v-2z"/></svg>
+        Servers
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm1 11H7V7h2v4zm0-6H7V3h2v2z"/></svg>
+        Scan Control
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0L1 14h14L8 0zm-1 6h2v4H7V6zm0 5h2v2H7v-2z"/></svg>
+        Threats
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12v2H2V2zm0 3h12v2H2V5zm0 3h8v2H2V8zm0 3h5v2H2v-2z"/></svg>
+        Reports
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a3 3 0 100 6A3 3 0 008 1zM4 7a4 4 0 118 0H4zm-2 2h12v6H2V9z"/></svg>
+        Settings
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="status-pill">
+        <div class="pulse-dot"></div>
+        System Online
+      </div>
     </div>
-    <div class="card">
-      <span class="label">Assets Found</span>
-      <span class="value green" id="found">—</span>
-      <span class="sub">whitelisted hits</span>
-    </div>
-    <div class="card">
-      <span class="label">Active Servers</span>
-      <span class="value yellow pulse" id="activeServers">—</span>
-      <span class="sub">heartbeat &lt; 90s ago</span>
-    </div>
-    <div class="card">
-      <span class="label">Hit Rate</span>
-      <span class="value pink" id="hitRate">—</span>
-      <span class="sub">found / scanned</span>
-    </div>
-  </div>
+  </aside>
 
-  <p class="section-title">server instances</p>
+  <!-- MAIN -->
+  <div class="main">
 
-  <table>
-    <thead>
-      <tr>
-        <th>Server ID</th>
-        <th>Status</th>
-        <th>Current ID</th>
-        <th>Scanned</th>
-        <th>Found</th>
-        <th>Last Seen</th>
-      </tr>
-    </thead>
-    <tbody id="serverTable">
-      <tr><td colspan="6" style="color:#444;padding:16px 12px;">loading...</td></tr>
-    </tbody>
-  </table>
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div>
+        <div class="topbar-title">Dashboard</div>
+      </div>
+      <div class="topbar-spacer"></div>
+      <div class="search-box">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="#64748b"><path d="M11.742 10.344a6.5 6.5 0 10-1.397 1.398l3.85 3.85a1 1 0 001.415-1.415l-3.868-3.833zm-5.242 1.156a5.5 5.5 0 110-11 5.5 5.5 0 010 11z"/></svg>
+        <input type="text" placeholder="Search assets, IPs, servers…"/>
+        <span class="search-kbd">⌘K</span>
+      </div>
+      <div class="topbar-btn notif-badge" title="Alerts">🔔</div>
+      <div class="topbar-btn" title="Theme">🌙</div>
+      <div class="avatar">AD</div>
+      <div class="avatar-info">
+        <span class="avatar-name">Admin</span>
+        <span class="avatar-role">Administrator</span>
+      </div>
+    </header>
 
-  <p class="updated" id="updatedAt">last fetched: —</p>
+    <!-- CONTENT -->
+    <div class="content">
 
-  <script>
-    const FIREBASE = "https://rrrrrrr-37f0d-default-rtdb.firebaseio.com/";
-    const STALE_THRESHOLD = 90; // seconds before marking server dead
+      <!-- METRICS -->
+      <div class="metrics">
+        <div class="metric-card" style="--accent:var(--blue);--icon-bg:var(--blue-dim)">
+          <div class="metric-head">
+            <span class="metric-label">Current ID</span>
+            <div class="metric-icon">🔵</div>
+          </div>
+          <div class="metric-val blue" id="currentID">—</div>
+          <div class="metric-foot">
+            <span class="badge-up" id="idDelta">—</span>
+            <span>scanning position</span>
+          </div>
+        </div>
+        <div class="metric-card" style="--accent:var(--green);--icon-bg:var(--green-dim)">
+          <div class="metric-head">
+            <span class="metric-label">Total Scanned</span>
+            <div class="metric-icon">📋</div>
+          </div>
+          <div class="metric-val" id="scanned">—</div>
+          <div class="metric-foot">
+            <span class="badge-up" id="scannedDelta">—</span>
+            <span>across all servers</span>
+          </div>
+        </div>
+        <div class="metric-card" style="--accent:var(--green);--icon-bg:var(--green-dim)">
+          <div class="metric-head">
+            <span class="metric-label">Assets Found</span>
+            <div class="metric-icon">📦</div>
+          </div>
+          <div class="metric-val green" id="found">—</div>
+          <div class="metric-foot">
+            <span class="badge-flat">→</span>
+            <span>whitelisted hits</span>
+          </div>
+        </div>
+        <div class="metric-card" style="--accent:var(--yellow);--icon-bg:#a1620720">
+          <div class="metric-head">
+            <span class="metric-label">Active Servers</span>
+            <div class="metric-icon">🖥️</div>
+          </div>
+          <div class="metric-val yellow" id="activeServers">—</div>
+          <div class="metric-foot">
+            <span class="badge-flat">→</span>
+            <span>heartbeat &lt; 90s</span>
+          </div>
+        </div>
+        <div class="metric-card" style="--accent:var(--pink);--icon-bg:var(--pink-dim)">
+          <div class="metric-head">
+            <span class="metric-label">Hit Rate</span>
+            <div class="metric-icon">🎯</div>
+          </div>
+          <div class="metric-val pink" id="hitRate">—</div>
+          <div class="metric-foot">
+            <span class="badge-flat">→</span>
+            <span>found / scanned</span>
+          </div>
+        </div>
+      </div>
 
-    function fmt(n) {
-      if (n == null) return "—";
-      return Number(n).toLocaleString();
-    }
+      <!-- MID ROW -->
+      <div class="mid-row">
 
-    function timeAgo(unixSec) {
-      const diff = Math.floor(Date.now() / 1000) - unixSec;
-      if (diff < 60)  return diff + "s ago";
-      if (diff < 3600) return Math.floor(diff / 60) + "m ago";
-      return Math.floor(diff / 3600) + "h ago";
-    }
+        <!-- CHART -->
+        <div class="chart-card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Scan Progress</div>
+              <div class="card-sub">IDs scanned over time</div>
+            </div>
+            <div class="time-pill">📅 Last 24 hours ▾</div>
+          </div>
+          <canvas id="scanChart"></canvas>
+        </div>
 
-    async function fetchData() {
-      try {
-        const res  = await fetch(FIREBASE + "/scanner.json");
-        const data = await res.json();
-        if (!data) return;
+        <!-- ACTIVITY -->
+        <div class="activity-card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Live Activity</div>
+              <div class="card-sub">Real-time updates</div>
+            </div>
+          </div>
+          <div class="activity-list" id="activityList">
+            <div style="color:var(--muted);font-size:12px;padding:8px 0">Waiting for data…</div>
+          </div>
+        </div>
 
-        const stats   = data.stats   || {};
-        const servers = data.servers || {};
+      </div>
 
-        // ── stats cards ──────────────────────────────────
-        document.getElementById("currentID").textContent = fmt(stats.currentID);
-        document.getElementById("scanned").textContent   = fmt(stats.scanned);
-        document.getElementById("found").textContent     = fmt(stats.found);
+      <!-- BOTTOM ROW -->
+      <div class="bottom-row">
 
-        const rate = stats.scanned > 0
-          ? ((stats.found / stats.scanned) * 100).toFixed(3) + "%"
-          : "0%";
-        document.getElementById("hitRate").textContent = rate;
-
-        // ── server table ─────────────────────────────────
-        const now    = Math.floor(Date.now() / 1000);
-        const rows   = Object.entries(servers);
-        let   active = 0;
-
-        const tbody = document.getElementById("serverTable");
-
-        if (rows.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" style="color:#444;padding:16px 12px;">no servers reporting yet</td></tr>`;
-        } else {
-          tbody.innerHTML = rows.map(([id, s]) => {
-            const alive = (now - (s.lastSeen || 0)) < STALE_THRESHOLD;
-            if (alive) active++;
-            return `
+        <!-- SERVER TABLE -->
+        <div class="table-card">
+          <div class="table-head">
+            <div>
+              <div class="card-title">Server Instances</div>
+              <div class="card-sub" style="font-size:11px;color:var(--muted);margin-top:2px">Monitor scanning servers</div>
+            </div>
+            <div class="table-search">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="#64748b"><path d="M11.742 10.344a6.5 6.5 0 10-1.397 1.398l3.85 3.85a1 1 0 001.415-1.415l-3.868-3.833zm-5.242 1.156a5.5 5.5 0 110-11 5.5 5.5 0 010 11z"/></svg>
+              <input type="text" placeholder="Search servers…" id="serverSearch"/>
+            </div>
+            <div class="filter-btn">⚙ Filter</div>
+          </div>
+          <table>
+            <thead>
               <tr>
-                <td style="font-family:monospace;color:#888">${id}</td>
-                <td>
-                  <span class="dot ${alive ? 'alive' : 'stale'}"></span>
-                  ${alive ? '<span style="color:#4ade80">alive</span>' : '<span style="color:#ef4444">stale</span>'}
-                </td>
-                <td>${fmt(s.currentID)}</td>
-                <td>${fmt(s.scanned)}</td>
-                <td>${fmt(s.found)}</td>
-                <td style="color:#555">${s.lastSeen ? timeAgo(s.lastSeen) : "—"}</td>
-              </tr>`;
-          }).join("");
-        }
+                <th>Server ID</th>
+                <th>Status</th>
+                <th>Current ID</th>
+                <th>Scanned</th>
+                <th>Found</th>
+                <th>Last Seen</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="serverTable">
+              <tr><td colspan="7" style="color:var(--muted);padding:20px 14px;font-size:12px">Loading…</td></tr>
+            </tbody>
+          </table>
+          <div class="pagination">
+            <div class="page-btn">‹</div>
+            <div class="page-btn active">1</div>
+            <div class="page-btn">2</div>
+            <div class="page-btn">›</div>
+            <span class="page-info" id="pageInfo">—</span>
+          </div>
+        </div>
 
-        document.getElementById("activeServers").textContent = active;
-        document.getElementById("updatedAt").textContent =
-          "last fetched: " + new Date().toLocaleTimeString();
+        <!-- ALERTS -->
+        <div class="alerts-card">
+          <div class="card-head">
+            <div class="card-title">Alerts &amp; Threats</div>
+            <span class="alert-badge" id="alertCount">0</span>
+          </div>
+          <div id="alertsList">
+            <div style="color:var(--muted);font-size:12px">No alerts</div>
+          </div>
+          <div class="view-all">View all alerts →</div>
+        </div>
 
-      } catch (e) {
-        console.error("fetch failed:", e);
-      }
+      </div>
+
+      <div style="font-size:11px;color:var(--muted);text-align:center;padding:4px 0" id="updatedAt">—</div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const FIREBASE = "https://rrrrrrr-37f0d-default-rtdb.firebaseio.com";
+const STALE    = 90;
+
+// chart setup
+const ctx = document.getElementById('scanChart').getContext('2d');
+const chartLabels = [];
+const chartData   = [];
+
+const scanChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: chartLabels,
+    datasets: [{
+      label: 'ID Position',
+      data: chartData,
+      borderColor: '#3b82f6',
+      backgroundColor: 'rgba(59,130,246,0.08)',
+      borderWidth: 2,
+      pointRadius: 0,
+      tension: 0.4,
+      fill: true,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {
+      backgroundColor: '#0e1420',
+      borderColor: '#1c2535',
+      borderWidth: 1,
+      titleColor: '#94a3b8',
+      bodyColor: '#e2e8f0',
+      callbacks: { label: ctx => ' ID: ' + Number(ctx.parsed.y).toLocaleString() }
+    }},
+    scales: {
+      x: { grid: { color: '#1c2535' }, ticks: { color: '#475569', font: { size: 10 } } },
+      y: { grid: { color: '#1c2535' }, ticks: { color: '#475569', font: { size: 10 },
+        callback: v => (v/1e6).toFixed(1)+'M' } }
+    }
+  }
+});
+
+function fmt(n){ return n==null ? '—' : Number(n).toLocaleString(); }
+function timeAgo(t){
+  if(!t) return '—';
+  const d = Math.floor(Date.now()/1000) - t;
+  if(d<60)  return d+'s ago';
+  if(d<3600) return Math.floor(d/60)+'m ago';
+  return Math.floor(d/3600)+'h ago';
+}
+
+const activities = [];
+function pushActivity(text, color){
+  activities.unshift({ text, color, time: new Date().toLocaleTimeString() });
+  if(activities.length > 20) activities.pop();
+  renderActivity();
+}
+function renderActivity(){
+  const el = document.getElementById('activityList');
+  if(!activities.length){ el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px 0">Waiting…</div>'; return; }
+  el.innerHTML = activities.map(a=>`
+    <div class="activity-item">
+      <div class="a-dot ${a.color}"></div>
+      <div class="a-text">${a.text}</div>
+      <div class="a-time">${a.time}</div>
+    </div>`).join('');
+}
+
+let prevScanned = null;
+let prevID = null;
+
+async function fetchData(){
+  try{
+    const res  = await fetch(FIREBASE + '/scanner.json');
+    const data = await res.json();
+    if(!data) return;
+
+    const stats   = data.stats   || {};
+    const servers = data.servers || {};
+    const now     = Math.floor(Date.now()/1000);
+
+    // metrics
+    document.getElementById('currentID').textContent = fmt(stats.currentID);
+    document.getElementById('scanned').textContent   = fmt(stats.scanned);
+    document.getElementById('found').textContent     = fmt(stats.found);
+
+    const rate = stats.scanned > 0
+      ? ((stats.found/stats.scanned)*100).toFixed(3)+'%' : '0.000%';
+    document.getElementById('hitRate').textContent = rate;
+
+    // deltas
+    if(prevScanned !== null && stats.scanned > prevScanned){
+      const d = stats.scanned - prevScanned;
+      document.getElementById('scannedDelta').textContent = '+'+fmt(d);
+      pushActivity(`<strong>${fmt(d)}</strong> IDs scanned this interval`, 'blue');
+    }
+    if(prevID !== null && stats.currentID > prevID){
+      const pct = ((stats.currentID - prevID)/prevID*100).toFixed(2);
+      document.getElementById('idDelta').textContent = '+'+pct+'%';
+    }
+    prevScanned = stats.scanned;
+    prevID      = stats.currentID;
+
+    // chart
+    const label = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    chartLabels.push(label);
+    chartData.push(stats.currentID || 0);
+    if(chartLabels.length > 24){ chartLabels.shift(); chartData.shift(); }
+    scanChart.update('none');
+
+    // servers table
+    const rows   = Object.entries(servers);
+    let   active = 0;
+    const tbody  = document.getElementById('serverTable');
+
+    if(!rows.length){
+      tbody.innerHTML = `<tr><td colspan="7" style="color:var(--muted);padding:20px 14px;font-size:12px">No servers reporting yet</td></tr>`;
+    } else {
+      tbody.innerHTML = rows.map(([id, s]) => {
+        const alive   = (now - (s.lastSeen||0)) < STALE;
+        const deg     = !alive && s.scanned > 0;
+        if(alive) active++;
+        const chipCls = alive ? 'chip-alive' : (deg ? 'chip-degraded' : 'chip-offline');
+        const chipLbl = alive ? 'alive'       : (deg ? 'degraded'      : 'offline');
+        return `<tr>
+          <td class="mono">${id}</td>
+          <td><span class="status-chip ${chipCls}"><span class="chip-dot"></span>${chipLbl}</span></td>
+          <td class="mono">${fmt(s.currentID)}</td>
+          <td>${fmt(s.scanned)}</td>
+          <td>${fmt(s.found)}</td>
+          <td style="color:var(--muted);font-size:12px">${timeAgo(s.lastSeen)}</td>
+          <td><div class="row-actions">
+            <div class="row-btn" title="More">⋯</div>
+            <div class="row-btn" title="Stats">📊</div>
+          </div></td>
+        </tr>`;
+      }).join('');
+
+      // push activity for new servers
+      if(active > 0) pushActivity(`<strong>${active}</strong> server${active>1?'s':''} active`, 'green');
     }
 
-    fetchData();
-    setInterval(fetchData, 15000);
-  </script>
+    document.getElementById('activeServers').textContent = active;
+    document.getElementById('pageInfo').textContent = `Showing ${rows.length} server${rows.length!==1?'s':''}`;
 
+    // alerts
+    const alertsEl = document.getElementById('alertsList');
+    const alerts = [];
+    if(active === 0 && rows.length > 0) alerts.push({ sev:'high',   title:'All servers offline',       desc:'No heartbeat received',      time:'just now' });
+    if(stats.found > 0)                 alerts.push({ sev:'info',   title:'New asset discovered',      desc:`${fmt(stats.found)} hit(s)`, time:'recent'   });
+    rows.forEach(([id,s])=>{ if(!((now-(s.lastSeen||0))<STALE) && s.scanned>0) alerts.push({ sev:'medium', title:`Server degraded`, desc:id, time:timeAgo(s.lastSeen) }); });
+
+    document.getElementById('alertCount').textContent = alerts.length;
+    if(!alerts.length){
+      alertsEl.innerHTML = '<div style="color:var(--muted);font-size:12px">No active alerts</div>';
+    } else {
+      alertsEl.innerHTML = alerts.slice(0,3).map(a=>`
+        <div class="alert-item">
+          <span class="severity sev-${a.sev}">${a.sev.toUpperCase()}</span>
+          <div class="alert-body">
+            <div class="alert-title">${a.title}</div>
+            <div class="alert-desc">${a.desc}</div>
+          </div>
+          <div class="alert-time">${a.time}</div>
+        </div>`).join('');
+    }
+
+    document.getElementById('updatedAt').textContent =
+      'Last fetched: ' + new Date().toLocaleTimeString();
+
+  }catch(e){ console.error(e); }
+}
+
+// server search filter
+document.getElementById('serverSearch').addEventListener('input', function(){
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('#serverTable tr').forEach(tr=>{
+    tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+
+fetchData();
+setInterval(fetchData, 15000);
+</script>
 </body>
 </html>
